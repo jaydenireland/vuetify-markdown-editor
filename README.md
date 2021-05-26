@@ -26,7 +26,6 @@ For installing Vuetify, please visit <https://vuetifyjs.com/en/getting-started/q
 - Emoji picking
 - Math formula (See [markdown-it-texmath](https://github.com/goessner/markdown-it-texmath))
 - Image uploading and previewing (to use uploaded image in markdown, use the filename as the link)
-- Mermaid diagram rendering (use code block with language `mermaid`)
 
 ## TODO
 
@@ -53,15 +52,17 @@ This package can be used in Node.js module:
       ref="editor"
       hint="Hint"
       :outline="false"
-      :render-config="renderConfig"
+      :renderer="renderer"
       v-model="text"
+      rows="5"
     />
   </v-app>
 </template>
 
 <script>
-import { Editor } from "vuetify-markdown-editor";
+import { Editor } from "./build-entry.js";
 import { VApp } from 'vuetify/lib';
+import markdownIt from 'markdown-it'
 
 export default {
   name: "app",
@@ -71,13 +72,8 @@ export default {
   },
   data() {
     return {
+      renderer: markdownIt(),
       text: "",
-      renderConfig: {
-        // Mermaid config
-        mermaid: {
-          theme: "dark"
-        }
-      }
     };
   },
   mounted() {
@@ -94,13 +90,10 @@ export default {
 
 To show the rendered html only, use `viewer` mode.
 
-To use the markdown-it renderer directly,
-use `createRenderer` to create it.
 
 ## Exported modules
 
 * Editor: a vue component to edit markdown
-* createRenderer: a function to create a markdown-it render
 
 ## Props
 
@@ -108,7 +101,7 @@ use `createRenderer` to create it.
 | ------------- | --------------------------------------- | ---------------------------------------------------------------- |
 | value         | `''`                                    | String that binds to the textarea                                |
 | mode          | `'preview'`                            | Possible value `'editor'`, `'preview'` or `'viewer'`. When set to `'editor'` or `'viewer'`, only the editor or viewer is displayed, while `'preview'` mode displays both. |
-| renderConfig  | `undefined`                             | Override default configurations                                  |
+| renderer  | `undefined`                             | markdownit instance                                  |
 | outline       | `false`                                 | The border will be outlined instead of card style                |
 | color         | `undefined`                             | The outline and icon's color                                     |
 | nativeEmoji   | `false`                                 | Use native emoji instead of pictures                             |

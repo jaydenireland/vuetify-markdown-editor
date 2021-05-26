@@ -1,14 +1,11 @@
 import MarkdownEditor from './components/MarkdownEditor.vue';
-import createRenderer from './util/render';
 
 // Named export
 export {
-	MarkdownEditor as Editor,
-	createRenderer
+	MarkdownEditor as Editor
 };
 
 // Default export
 export default {
-	Editor: MarkdownEditor,
-	createRenderer
+	Editor: MarkdownEditor
 };

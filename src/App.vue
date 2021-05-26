@@ -5,7 +5,7 @@
       ref="editor"
       hint="Hint"
       :outline="false"
-      :render-config="renderConfig"
+      :renderer="renderer"
       v-model="text"
       rows="5"
     />
@@ -15,6 +15,7 @@
 <script>
 import { Editor } from "./build-entry.js";
 import { VApp } from 'vuetify/lib';
+import markdownIt from 'markdown-it'
 
 export default {
   name: "app",
@@ -24,13 +25,8 @@ export default {
   },
   data() {
     return {
+      renderer: markdownIt(),
       text: "",
-      renderConfig: {
-        // Mermaid config
-        mermaid: {
-          theme: "dark"
-        }
-      }
     };
   },
   mounted() {

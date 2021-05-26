@@ -118,26 +118,14 @@ import Flow from "@flowjs/flow.js/dist/flow.min.js";
 import emojiData from "emoji-mart-vue-fast/data/all.json";
 import { Picker, EmojiIndex } from "emoji-mart-vue-fast";
 import vClickOutside from "v-click-outside";
-import mermaid from "mermaid";
-import md5 from "crypto-js/md5";
-import createRenderer from "../util/render";
 import ImageStatus from "./FileStatus.vue";
 import Vue from 'vue';
 import _ from 'lodash';
-import { defaultConfig } from '@/util/config';
 
 // CSS
 import "emoji-mart-vue-fast/css/emoji-mart.css";
 import "../style.css";
 
-// Not watched variables
-let mermaidTimeout = null;
-// Cache to accelerate rendering
-const cache = {
-	mermaid: {}
-};
-
-let renderer;
 
 export default {
 	components: {
@@ -157,13 +145,13 @@ export default {
 		clickOutside: vClickOutside.directive
 	},
 	props: {
+		renderer: {
+			type: Object,
+			default: null
+		},
 		value: {
 			type: String,
 			default: ""
-		},
-		renderConfig: {
-			type: Object,
-			default: undefined
 		},
 		mode: {
 			type: String,
@@ -225,7 +213,7 @@ export default {
 
 	computed: {
 		compiled() {
-			let compiled = renderer.render(
+			let compiled = this.renderer.render(
 				this.value
 				/*
 				cache
@@ -241,7 +229,7 @@ export default {
 							`src="${this.dataUris[file.name]}"`
 						);
 			}
-			
+
 			// Replace image names with baseUrl
 			compiled = compiled.replace(
 				/src="([^/]+)"/g,
@@ -256,22 +244,11 @@ export default {
 	},
 
 	watch: {
-		renderConfig: {
-			immediate: true,
-			handler() {
-				const config = _.merge(_.clone(defaultConfig), this.renderConfig);
-				renderer = createRenderer(config);
-				if (config.mermaid) {
-					mermaid.initialize(config.mermaid);
-				}
-			}
-		},
 		compiled: {
 			immediate: true,
 			async handler() {
 				// Wait until rendered
 				await this.$nextTick();
-				this.renderMermaid();
 			}
 		}
 	},
@@ -319,42 +296,6 @@ export default {
 	},
 
 	methods: {
-		async renderMermaid() {
-			if (mermaidTimeout) clearTimeout(mermaidTimeout);
-
-			// Try cache first
-			let els = document.getElementsByClassName("mermaid");
-			const uncached = [];
-			for (let i = 0; i < els.length; ++i) {
-				const hash = md5(els[i].textContent.trim()).toString();
-				if (cache.mermaid[hash]) {
-					els[i].innerHTML = cache.mermaid[hash];
-					// To prevent from rendering it again
-					els[i].className = 'mermaid-cached';
-
-					// This el has been **removed** from els
-					--i;
-					continue;
-				}
-				// Record the index for caching later
-				uncached.push(hash);
-			}
-
-			if (uncached.length) 
-				mermaidTimeout = setTimeout(() => {
-					try {
-						mermaid.init();
-						// Update cache
-						els = document.getElementsByClassName("mermaid");
-						for (let i = 0; i < els.length; ++i) {
-							if (uncached[i])
-								cache.mermaid[uncached[i]] = els[i].innerHTML;
-						}
-					} catch (err) {}
-					mermaidTimeout = null;
-				}, 300);
-		},
-
 		// Provide a function to focus on the textarea
 		focus() {
 			this.$refs.textarea.focus();
